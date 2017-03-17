@@ -1,0 +1,2 @@
+# TreacherousPathToGeneralizableResults
+My research thesis from Rutgers, including R code for replicating simulations performed in thesis. The paper examines how treatment effect pervasiveness (the proportion of observations in a data set that exhibit an effect) can skew hallmark statistics such as SDs, t- and F-tests, and effect size measurements. The real world implications of this phenomenon are both pervasive and significant to the conclusions researchers can draw from their analyses.
