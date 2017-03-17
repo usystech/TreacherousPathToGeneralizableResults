@@ -1,0 +1,42 @@
+par(mfrow=c(2,2))
+plot(truePropXData, halfSDTHalfIE, main = "Treatment Condition, Small I.E. (0.5 SD)", xlab="Proportion of Observations Exhibiting an Effect", ylab= "Sample S.D. Estimate", ylim = c(1.8,2.5), pch = 19, col = "red")
+points(truePropXData, oneSDTHalfIE, pch= 19, col = "orange")
+points(truePropXData, oneHalfSDTHalfIE, pch= 19, col = "yellow")
+legPchNum<-c(19, 19, 19)
+legCols<-c("red", "orange", "yellow")
+legVarNames<-c("0.5 SD","1.0 SD","1.5 SD")
+legend("topleft",legend=legVarNames,pch=legPchNum, col = legCols, title="Size of Treatment Effect", cex=0.5)
+
+
+
+par(new=F)
+plot(truePropXData, halfSDCHalfIE,  main = "Control Condition, Small I.E. (0.5 SD)", xlab="Proportion of Observations Exhibiting an Effect", ylab= "Sample S.D. Estimate", ylim = c(1.8,2.5), pch = 19, col = "red")
+points(truePropXData, oneSDCHalfIE, pch= 19, col = "orange")
+points(truePropXData, oneHalfSDCHalfIE, pch= 19, col = "yellow")
+legPchNum<-c(19, 19, 19)
+legCols<-c("red", "orange", "yellow")
+legVarNames<-c("0.5 SD","1.0 SD","1.5 SD")
+legend("topleft",legend=legVarNames,pch=legPchNum, col = legCols, title="Size of Treatment Effect", cex=0.5)
+
+
+
+par(new=F)
+plot(truePropXData, halfSDTOneIE, main = "Treatment Condition, Large I.E.", xlab="Proportion of Observations Exhibiting an Effect", ylab= "Sample S.D. Estimate", ylim = c(2.2,2.8), pch = 19, col = "red")
+points(truePropXData, oneSDTOneIE, pch= 19, col = "orange")
+points(truePropXData, oneHalfSDTOneIE, pch= 19, col = "yellow")
+legPchNum<-c(19, 19, 19)
+legCols<-c("red", "orange", "yellow")
+legVarNames<-c("0.5 SD","1.0 SD","1.5 SD")
+legend("topleft",legend=legVarNames,pch=legPchNum, col = legCols, title="Size of Treatment Effect", cex=0.5)
+
+
+par(new=F)
+plot(truePropXData, halfSDCOneIE,  main = "Control Condition, Large I.E.", xlab="Proportion of Observations Exhibiting an Effect", ylab= "Sample S.D. Estimate", ylim = c(2.2,2.8), pch = 19, col = "red")
+points(truePropXData, oneSDCOneIE, pch= 19, col = "orange")
+points(truePropXData, oneHalfSDCOneIE, pch= 19, col = "yellow")
+legPchNum<-c(19, 19, 19)
+legCols<-c("red", "orange", "yellow")
+legVarNames<-c("0.5 SD","1.0 SD","1.5 SD")
+legend("topleft",legend=legVarNames,pch=legPchNum, col = legCols, title="Size of Treatment Effect", cex=0.5)
+
+

@@ -1,0 +1,171 @@
+treatEffect<-0.5
+populationP<-0.0
+interactionVariability<-1
+
+halfSDCOneIE<-matrix(,nrow=51,ncol=1)
+halfSDTOneIE<-matrix(,nrow=51,ncol=1)
+halfSDDOneIE<-matrix(,nrow=51,ncol=1)
+halfMTOneIE<-matrix(,nrow=51,ncol=1)
+halfMCOneIE<-matrix(,nrow=51,ncol=1)
+halfMDOneIE<-matrix(,nrow=51,ncol=1)
+halfGWOneIE<-matrix(,nrow=51,ncol=1)
+halfSANOVAPVOneIE<-matrix(,nrow=51,ncol=1)
+halfIANOVAPVOneIE<-matrix(,nrow=51,ncol=1)
+halfSESOneIE<-matrix(,nrow=51,ncol=1)
+halfIESOneIE<-matrix(,nrow=51,ncol=1)
+halfMFPVOneIE<-matrix(,nrow=51,ncol=1)
+
+for( c in 1:51){
+ 
+SDCD<-matrix(,nrow=100,ncol=1)
+SDTD<-matrix(,nrow=100,ncol=1)
+SDDD<-matrix(,nrow=100,ncol=1)
+MTD<-matrix(,nrow=100,ncol=1)
+MCD<-matrix(,nrow=100,ncol=1)
+MDD<-matrix(,nrow=100,ncol=1)
+GWD<-matrix(,nrow=100,ncol=1)
+SANOVAPVD<-matrix(,nrow=100,ncol=1)
+IANOVAPVD<-matrix(,nrow=100,ncol=1)
+SESD<-matrix(,nrow=100,ncol=1)
+IESD<-matrix(,nrow=100,ncol=1)
+MFPVD<-matrix(,nrow=100,ncol=1) 
+
+for(w in 1:100){
+numModded<-rbinom(1, 400, populationP )
+subjIndividDiff<-rnorm(20)
+itemIndividDiff<-rnorm(20)
+subjItemInteraction<-matrix(rnorm(400,0,interactionVariability), nrow = 20, ncol = 20)
+subjTreat1Interaction<-rnorm(20,0,interactionVariability)
+subjTreat2Interaction<-rnorm(20,0,interactionVariability)
+itemTreat1Interaction<-rnorm(20,0,interactionVariability)
+itemTreat2Interaction<-rnorm(20,0,interactionVariability)
+treat1<- matrix(,nrow = 20, ncol = 20)
+cont<- matrix(,nrow = 20, ncol = 20)
+
+for(a in 1:20){
+for(z in 1:20){
+	treat1[a,z]<-rnorm(1,(subjIndividDiff[a]+itemIndividDiff[z]+subjTreat1Interaction[a]+itemTreat1Interaction[z]+subjItemInteraction[a,z]),1)
+	cont[a,z]<-rnorm(1,(subjIndividDiff[a]+itemIndividDiff[z]+subjTreat2Interaction[a]+itemTreat2Interaction[z]+subjItemInteraction[a,z]),1)
+} }
+
+difference1<-matrix(,nrow=20, ncol=20)
+alrdyModded1<- matrix(FALSE, nrow = 20, ncol = 20)
+## we have initalized and filled data structures
+for(b in 1:numModded){
+rrow1<-sample.int(20,1)
+rcol1<-sample.int(20,1)
+	while(alrdyModded1[rrow1 , rcol1]){
+		rrow1<-sample.int(20,1)
+		rcol1<-sample.int(20,1)	
+	}
+treat1[rrow1,rcol1]<-'+'(treat1[rrow1,rcol1],treatEffect)	
+alrdyModded1[rrow1,rcol1]<-TRUE
+}
+## We've modified observations
+s<-1:20
+def<-1:20
+difference1[s,def]<-'-'(treat1[s,def] , cont[s,def])
+##Next, we analyze data and gather results
+contSD<-sd(cont)
+treat1SD<-sd(treat1)
+diff1SD<-sd(difference1)
+trt1Mean<-mean(treat1)
+contMean<-mean(cont)
+diff1Mean<-mean(difference1)
+GWRatio1<-treat1SD/contSD
+t1SubjMeans<-seq(from=0, to=0, length.out=20)
+t1ItemMeans<-seq(from=0, to=0, length.out=20)
+cSubjMeans<-seq(from=0, to=0, length.out=20)
+cItemMeans<-seq(from=0, to=0, length.out=20)
+for(d in 1:20){
+t1SubjMeans[d] <- mean(treat1[d,(1:20)])
+t1ItemMeans[d] <- mean(treat1[(1:20),d])
+cSubjMeans[d] <- mean(cont[d,(1:20)])
+cItemMeans[d] <- mean(cont[(1:20),d]) }
+treat<-c(seq(0,0,length.out=20),seq(1,1,length.out=20))
+TREAT<-factor(treat)
+subjData1<-c(cSubjMeans,t1SubjMeans)
+itemData1<-c(cItemMeans,t1ItemMeans)
+subj1LM<-lm(subjData1 ~ TREAT)
+item1LM<-lm(itemData1 ~ TREAT)
+subj1AOV<-aov(subjData1 ~ TREAT)
+item1AOV<-aov(itemData1 ~ TREAT)
+subjAOVPVal<-summary(subj1AOV)[[1]][["Pr(>F)"]][[1]] 
+itemAOVPVal<-summary(item1AOV)[[1]][["Pr(>F)"]][[1]] 
+effectSizeSubj1<-(mean(t1SubjMeans) - mean(cSubjMeans))/summary(subj1LM)$sigma
+effectSizeItem1<-(mean(t1ItemMeans) - mean(cItemMeans))/summary(item1LM)$sigma
+
+# VVV generates coding for min-F treatment
+
+tTreat<- matrix(1, nrow = 20, ncol = 20)
+cTreat<- matrix(0, nrow = 20, ncol = 20)
+# VVV generate coding for min-F subject factor
+tSubj<- matrix(, nrow = 20, ncol = 20)
+cSubj<- matrix(, nrow = 20, ncol = 20)
+for(q in 1:20){
+tSubj[q,]<-q
+cSubj[q,]<-q }
+# VVV generate coding for min-F item factor
+tWord<- matrix(, nrow = 20, ncol = 20)
+cWord<- matrix(, nrow = 20, ncol = 20)
+for(h in 1:20){
+for(g in 1:20){
+tWord[h,g]<-g
+cWord[h,g]<-g } }
+Data<-c(cont,treat1)
+trt<-c(cTreat,tTreat)
+sub<-c(cSubj,tSubj)
+wrd<-c(cWord,tWord)
+Treat<- factor(trt)
+Subj<- factor(sub)
+Word <- factor(wrd)
+minFAOV<-aov(Data ~ Treat + Treat:Subj + Treat:Word + Subj:Treat:Word)
+MSt<-summary(minFAOV)[[1]][["Sum Sq"]][[1]]
+MSts<-summary(minFAOV)[[1]][["Sum Sq"]][[2]]
+MStw<-summary(minFAOV)[[1]][["Sum Sq"]][[3]]
+MStsw<-summary(minFAOV)[[1]][["Sum Sq"]][[4]]
+minF<-MSt/(MSts + MStw) 
+i<-(MSt + MStsw)^2/(MSt^2 + (MStsw^2/722))
+j<-(MSts + MStw)^2/(MSts^2/38 + MStw^2/38)
+minFPVal<-(1-pf(minF, df1 = i , df2 = j))
+
+ SDCD[w,1]<-contSD
+ SDTD[w,1]<-treat1SD
+ SDDD[w,1]<-diff1SD
+ MTD[w,1]<-trt1Mean
+ MCD[w,1]<-contMean
+ MDD[w,1]<-diff1Mean
+ GWD[w,1]<-GWRatio1
+ cft<-0
+ dft<-0
+ bft<-0
+ if(subjAOVPVal<=0.05){cft<-1}
+ if(itemAOVPVal<=0.05){dft<-1}
+ if(minFPVal<=0.05){ bft<-1 }
+ SANOVAPVD[w,1]<-cft
+ IANOVAPVD[w,1]<-dft
+ MFPVD[w,1]<-bft
+ SESD[w,1]<-effectSizeSubj1
+ IESD[w,1]<-effectSizeItem1
+ 
+}
+
+
+
+halfSDCOneIE[c,1]<-mean(SDCD)
+halfSDTOneIE[c,1]<-mean(SDTD)
+halfSDDOneIE[c,1]<-mean(SDDD)
+halfMTOneIE[c,1]<-mean(MTD)
+halfMCOneIE[c,1]<-mean(MCD)
+halfMDOneIE[c,1]<-mean(MDD)
+halfGWOneIE[c,1]<-mean(GWD)
+halfSANOVAPVOneIE[c,1]<-sum(SANOVAPVD)/100
+halfIANOVAPVOneIE[c,1]<-sum(IANOVAPVD)/100
+halfSESOneIE[c,1]<-mean(SESD)
+halfIESOneIE[c,1]<-mean(IESD)
+
+if(c<50){populationP<-'+'(populationP,0.02)}
+}
+
+save(halfSDCOneIE,halfSDTOneIE,halfSDDOneIE,halfMTOneIE,halfMCOneIE,halfMDOneIE,halfGWOneIE,halfSANOVAPVOneIE,halfIANOVAPVOneIE,halfSESOneIE,halfIESOneIE,halfMFPVOneIE,file="sim3TEHalfIEOnedata")
+

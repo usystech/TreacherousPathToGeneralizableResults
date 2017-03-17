@@ -1,0 +1,153 @@
+treatEffect<-0.5
+populationP<-0.0
+interactionVariability<-1
+criterionDenom<-c(1,2,3,4)
+
+pervStatDC1TE5<-matrix(,nrow=51,ncol=10)
+pervStatDC2TE5<-matrix(,nrow=51,ncol=10)
+pervStatDC3TE5<-matrix(,nrow=51,ncol=10)
+pervStatDC4TE5<-matrix(,nrow=51,ncol=10)
+effectPerv<-matrix(seq(from=0, to=1.0, by=0.02), nrow=51, ncol=1)
+
+for( each in 1:51){
+
+
+for(turn in 1:10){
+
+
+## creation of matrices, filling of data, adding of interaction effects
+
+if(populationP==1.0){
+numModded<-matrix(1,nrow=400,ncol=1)}
+if(populationP<1.0){
+numModded<-rbinom(1,400,populationP) }
+subjIndividDiff<-rnorm(20)
+itemIndividDiff<-rnorm(20)
+subjItemInteraction<-matrix(rnorm(400,0,interactionVariability), nrow = 20, ncol = 20)
+subjTreat1Interaction<-rnorm(20,0,interactionVariability)
+subjTreat2Interaction<-rnorm(20,0,interactionVariability)
+itemTreat1Interaction<-rnorm(20,0,interactionVariability)
+itemTreat2Interaction<-rnorm(20,0,interactionVariability)
+treat1<- matrix(,nrow = 20, ncol = 20)
+colnames(treat1)<-c("I 1","I 2","I 3","I 4","I 5","I 6","I 7","I 8","I 9","I 10","I 11","I 12","I 13","I 14","I 15","I 16","I 17","I 18","I 19","I 20")
+rownames(treat1)<-c("S 1","S 2","S 3","S 4","S 5","S 6","S 7","S 8","S 9","S 10","S 11","S 12","S 13","S 14","S 15","S 16","S 17","S 18","S 19","S 20")
+cont<- matrix(,nrow = 20, ncol = 20)
+colnames(cont)<-c("I 1","I 2","I 3","I 4","I 5","I 6","I 7","I 8","I 9","I 10","I 11","I 12","I 13","I 14","I 15","I 16","I 17","I 18","I 19","I 20")
+rownames(cont)<-c("S 1","S 2","S 3","S 4","S 5","S 6","S 7","S 8","S 9","S 10","S 11","S 12","S 13","S 14","S 15","S 16","S 17","S 18","S 19","S 20")
+for(a in 1:20){
+for(z in 1:20){
+	treat1[a,z]<-rnorm(1,(subjIndividDiff[a]+itemIndividDiff[z]+subjTreat1Interaction[a]+itemTreat1Interaction[z]+subjItemInteraction[a,z]),1)
+	cont[a,z]<-rnorm(1,(subjIndividDiff[a]+itemIndividDiff[z]+subjTreat2Interaction[a]+itemTreat2Interaction[z]+subjItemInteraction[a,z]),1)
+} }
+
+## Next: measure random effects
+
+subjMeans<-matrix(,nrow=20,ncol=2)
+itemMeans<-matrix(,nrow=2,ncol=20)
+for(way in 1:20){
+	subjMeans[way,1]<-mean(treat1[way,])
+	subjMeans[way,2]<-mean(cont[way,])
+	itemMeans[1,way]<-mean(treat1[,way])
+	itemMeans[2,way]<-mean(cont[,way])
+}
+
+## Create Factors
+
+Subject<-array(,dim=c(20,20,2))
+Item<-array(,dim=c(20,20,2))
+Treatment<-array(,dim=c(20,20,2))
+for(zoz in 1:20){
+for(ag in 1:20){
+	Subject[zoz,ag,1]<-zoz
+	Item[zoz,ag,1]<-ag
+	Treatment[zoz,ag,1]<-1
+	Subject[zoz,ag,2]<-zoz
+	Item[zoz,ag,2]<-ag
+	Treatment[zoz,ag,2]<-0
+} }
+
+
+Subject<-matrix(Subject,nrow=800,ncol=1)
+Item<-matrix(Item,nrow=800,ncol=1)p
+Treatment<-matrix(Treatment,nrow=800,ncol=1)
+Subject<-factor(Subject)
+Item<-factor(Item)
+Treatment<-factor(Treatment)
+
+data<-matrix(c(treat1,cont),nrow=800,ncol=1)
+
+model<-lmer(data~Treatment+(1|Subject)+(1|Item)++(1|Subject:Item)+(1|Item:Treatment)+(1|Subject:Treatment))
+modelCoef<-coef(model)
+
+## Pre: obtained random effect estimates, Post: store them in matrices
+
+subjEffects<-matrix(,nrow=20,ncol=1)
+itemEffects<-matrix(,nrow=20,ncol=1)
+subjItemEffects<-matrix(,nrow=400,ncol=1)
+itemTreatEffects<-matrix(,nrow=20,ncol=1)
+subjTreatEffects<-matrix(,nrow=20,ncol=1)
+
+for(vinny in 1:400){
+
+	if(vinny<21){ 
+		subjEffects[vinny]<-modelCoef$"Subject"[[1]][[vinny]]
+		itemEffects[vinny]<-modelCoef$"Item"[[1]][[vinny]]
+		itemTreatEffects[vinny]<-modelCoef$"Item:Treatment"[[1]][[vinny*2]]
+		subjTreatEffects[vinny]<-modelCoef$"Subject:Treatment"[[1]][[vinny*2]]
+	}
+		subjItemEffects[vinny]<-modelCoef$"Subject:Item"[[1]][[vinny]]
+}
+
+## Pre: Effects are easily processible, now compute residual matrix 
+
+
+data<-matrix(c(treat1,cont),nrow=800,ncol=1)
+grandMean<-mean(data)
+
+## We have measurements for all factors now
+
+results<-matrix(,nrow=400,ncol=1)
+for(rex in 1:400){
+
+	s<-subjEffects[Subject[rex]]
+	i<-itemEffects[Item[rex]]
+	st<-subjTreatEffects[Subject[rex]]
+	it<-itemTreatEffects[Item[rex]]
+	results[rex]<-data[rex]-grandMean-s-i-st-it
+
+}
+
+## Encode binary values into matrices for different decision criterion
+
+binaryDC1<-matrix(0,nrow=400,ncol=1)
+binaryDC2<-matrix(0,nrow=400,ncol=1)
+binaryDC3<-matrix(0,nrow=400,ncol=1)
+binaryDC4<-matrix(0,nrow=400,ncol=1)
+
+for(lisa in 1:400){
+	if(results[lisa,1]>=(sigma(model)/criterionDenom[1])){
+		binaryDC1[lisa,1]<-1}
+	if(results[lisa,1]>=(sigma(model)/criterionDenom[2])){
+		binaryDC2[lisa,1]<-1}
+	if(results[lisa,1]>=(sigma(model)/criterionDenom[3])){
+		binaryDC3[lisa,1]<-1}
+	if(results[lisa,1]>=(sigma(model)/criterionDenom[4])){
+		binaryDC4[lisa,1]<-1}
+}
+
+pervStatDC1TE1[each,turn]<-mean(binaryDC1)
+pervStatDC2TE1[each,turn]<-mean(binaryDC2)
+pervStatDC3TE1[each,turn]<-mean(binaryDC3)
+pervStatDC4TE1[each,turn]<-mean(binaryDC4)
+
+}
+
+if(populationP<1.0){ populationP<-populationP+0.02 }
+
+}
+
+
+
+
+
+save(pervStatDC1TE5,pervStatDC2TE5,pervStatDC3TE5,pervStatDC4TE5,effectPerv, file="TE5SIM3B")

@@ -1,0 +1,28 @@
+par(mfrow=c(2,1))
+plot(truePropXData, halfIANOVAPVHalfIE, main="Small Interaction Effects (0.5 SD)", xlab="Proportion of Observations Exhibiting an Effect", ylab= "Proportion of P Values Less Than 0.05", ylim = c(0,1), pch = 19, col = "red")
+points(truePropXData, oneIANOVAPVHalfIE, pch= 19, col = "red")
+points(truePropXData, oneHalfIANOVAPVHalfIE, pch= 19, col = "red")
+points(truePropXData, halfSANOVAPVHalfIE, pch=17, col = "orange")
+points(truePropXData, oneSANOVAPVHalfIE, pch=17, col = "orange")
+points(truePropXData, oneHalfSANOVAPVHalfIE, pch=17, col = "orange")
+legPchNum<-c(19, 19, 19, 17, 17, 17)
+legColNum<-c("red","red","red","orange","orange","orange")
+legVarNames<-c("0.5 SD Subj","1.0 SD, Subj","1.5 SD Subj","0.5 SD Item","1.0 SD Item","1.5 SD Item")
+legend("topleft",legend=legVarNames,pch=legPchNum, col = legColNum, title="Size of Treatment Effect", ncol=2 ,cex=0.5)
+
+par(new=F)
+plot(truePropXData, halfIANOVAPVOneIE, main="Large Interaction Effects (1.0 SD)", xlab="Proportion of Observations Exhibiting an Effect", ylab= "Proportion of P Values Less Than 0.05", ylim = c(0,1), pch = 19, col = "red")
+points(truePropXData, oneIANOVAPVOneIE, pch=19, col = "red")
+points(truePropXData, oneHalfIANOVAPVOneIE, pch=19, col = "red")
+points(truePropXData, halfSANOVAPVOneIE, pch=17, col = "orange")
+points(truePropXData, oneSANOVAPVOneIE, pch=17, col = "orange")
+points(truePropXData, oneHalfSANOVAPVOneIE, pch=17, col = "orange")
+legPchNum<-c(19, 19, 19, 17, 17, 17)
+legColNum<-c("red","red","red","orange","orange","orange")
+legVarNames<-c("0.5 SD Subj","1.0 SD, Subj","1.5 SD Subj","0.5 SD Item","1.0 SD Item","1.5 SD Item")
+legend("topleft",legend=legVarNames,pch=legPchNum, col = legColNum, title="Size of Treatment Effect", ncol=2 ,cex=0.5)
+
+
+
+trueTreatEffectYData<-seq(0,treatEffect,(treatEffect*0.02))
+truePropXData<-seq(0,1,0.02)
